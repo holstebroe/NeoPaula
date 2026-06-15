@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="NeoPaula.Tests/NeoPaula.Tests.csproj" />
+  <Project Path="NeoPaula/NeoPaula.csproj" />
+</Solution>
