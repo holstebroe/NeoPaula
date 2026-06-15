@@ -1,5 +1,3 @@
-![NeoPaula Logo](NeoPaulaLogo.jpg) NeoPaula
-
 ![NeoPaula Hero](NeoPaulaHero.jpg)
 
 ![NuGet Version](https://img.shields.io/nuget/v/NeoPaula.svg)
