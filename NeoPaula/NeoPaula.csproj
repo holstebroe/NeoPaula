@@ -4,10 +4,26 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+    <!-- NuGet Package Properties -->
+    <PackageId>NeoPaula</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>NeoPaula Contributors</Authors>
+    <Description>A modern C# library for playing old school Amiga Protracker / Noisetracker .mod music files as well as OctaMED .mmd files.</Description>
+    <PackageProjectUrl>https://github.com/your-user/NeoPaula</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/your-user/NeoPaula</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="NAudio" Version="2.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\NeoPaulaHero.jpg" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>
