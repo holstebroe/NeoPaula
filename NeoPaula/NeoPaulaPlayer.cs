@@ -1,5 +1,3 @@
-using System;
-using System.IO;
 using System.Text;
 using NAudio.Wave;
 using NeoPaula.Engine;
@@ -9,14 +7,9 @@ namespace NeoPaula
 {
     public class NeoPaulaPlayer : IDisposable
     {
-        private IWavePlayer _wavePlayer;
+        private IWavePlayer _wavePlayer = new WaveOutEvent();
         private TrackerSampleProvider? _trackerProvider;
         private MemoryStream? _streamCopy;
-
-        public NeoPaulaPlayer()
-        {
-            _wavePlayer = new WaveOutEvent();
-        }
 
         public void Play(string filename)
         {

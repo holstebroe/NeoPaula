@@ -1,4 +1,3 @@
-using System;
 using NAudio.Wave;
 using NeoPaula.Formats;
 
@@ -6,8 +5,8 @@ namespace NeoPaula.Engine
 {
     public class TrackerSampleProvider : ISampleProvider
     {
-        private Module _module;
-        private WaveFormat _waveFormat;
+        private readonly Module _module;
+        private readonly WaveFormat _waveFormat;
 
         // State
         private int _currentOrder;
@@ -20,28 +19,28 @@ namespace NeoPaula.Engine
         private int _samplesPerTick;
         private int _tickSamplePosition;
 
-        private ChannelState[] _channels;
+        private readonly ChannelState[] _channels;
 
         // Constants
         private const float AmigaClock = 7093789.2f;
 
         // Period table for standard notes (FinteTune 0)
-        private static readonly int[] PeriodTable = new int[]
-        {
+        private static readonly int[] PeriodTable =
+        [
             1712,1616,1525,1440,1357,1281,1209,1141,1077,1017, 961, 907, // Octave 0
              856, 808, 762, 720, 678, 640, 604, 570, 538, 508, 480, 453, // Octave 1
              428, 404, 381, 360, 339, 320, 302, 285, 269, 254, 240, 226, // Octave 2
              214, 202, 190, 180, 170, 160, 151, 143, 135, 127, 120, 113, // Octave 3
              107, 101,  95,  90,  85,  80,  76,  71,  67,  64,  60,  57  // Octave 4
-        };
+        ];
 
-        private static readonly int[] SineTable = new int[]
-        {
-              0,  24,  49,  74,  97, 120, 141, 161,
+        private static readonly int[] SineTable =
+        [
+            0,  24,  49,  74,  97, 120, 141, 161,
             180, 197, 212, 224, 235, 244, 250, 253,
             255, 253, 250, 244, 235, 224, 212, 197,
             180, 161, 141, 120,  97,  74,  49,  24
-        };
+        ];
 
         private int _nextOrder = -1;
         private int _nextRow = -1;

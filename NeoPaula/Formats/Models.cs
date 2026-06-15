@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace NeoPaula.Formats
 {
     public class Module
@@ -8,10 +6,10 @@ namespace NeoPaula.Formats
         public int NumberOfChannels { get; set; }
         public int SongLength { get; set; }
         public int RestartPosition { get; set; }
-        public int[] Sequence { get; set; } = new int[0];
+        public int[] Sequence { get; set; } = [];
 
-        public Sample[] Samples { get; set; } = new Sample[0];
-        public Pattern[] Patterns { get; set; } = new Pattern[0];
+        public Sample[] Samples { get; set; } = [];
+        public Pattern[] Patterns { get; set; } = [];
 
         // Default speeds
         public int DefaultSpeed { get; set; } = 6;
@@ -26,7 +24,7 @@ namespace NeoPaula.Formats
         public int Volume { get; set; }
         public int RepeatOffset { get; set; }
         public int RepeatLength { get; set; }
-        public byte[] Data { get; set; } = new byte[0];
+        public byte[] Data { get; set; } = [];
 
         // Some MMD specific
         public bool Is16Bit { get; set; }

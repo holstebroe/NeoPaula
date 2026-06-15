@@ -1,7 +1,4 @@
-using System.IO;
 using System.Text;
-using Xunit;
-using NeoPaula;
 
 namespace NeoPaula.Tests
 {
@@ -54,5 +51,13 @@ namespace NeoPaula.Tests
             Assert.Equal("OctaMED Module", info.Title);
             Assert.Equal(4, info.Channels);
         }
+
+        // For manual testing of playback of actual MOD
+        //[Fact]
+        //public void PlayTestMod()
+        //{
+        //    var player = new NeoPaulaPlayer();
+        //    player.Play(@"Mods/BEDROCK.MOD");
+        //}
     }
 }

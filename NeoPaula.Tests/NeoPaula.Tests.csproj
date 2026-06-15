@@ -22,4 +22,10 @@
     <ProjectReference Include="..\NeoPaula\NeoPaula.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Mods\BEDROCK.MOD">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

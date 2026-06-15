@@ -1,5 +1,3 @@
-using System;
-using System.IO;
 using System.Text;
 
 namespace NeoPaula.Formats
@@ -11,8 +9,8 @@ namespace NeoPaula.Formats
             // OctaMED format parsing logic.
             // Simplified logic: Reads the basics to demonstrate compatibility,
             // but a fully compliant MMD parser is massive.
-            BinaryReader reader = new BinaryReader(stream);
-            Module mod = new Module();
+            var reader = new BinaryReader(stream);
+            var mod = new Module();
 
             // Need to read big endian longs usually, Amiga is big endian
             // However MMD uses pointer offsets which requires specific loading mechanisms.
