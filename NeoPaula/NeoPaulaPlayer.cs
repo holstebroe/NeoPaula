@@ -7,11 +7,14 @@ namespace NeoPaula
 {
     public class NeoPaulaPlayer : IDisposable
     {
-        private IWavePlayer _wavePlayer = new WaveOutEvent();
+
+        private readonly IWavePlayer _wavePlayer = new WaveOutEvent();
         private TrackerSampleProvider? _trackerProvider;
         private MemoryStream? _streamCopy;
 
-        public InterpolationMode InterpolationMode { get; set; } = InterpolationMode.Linear;
+        public bool EnableOversampling { get; set; } = false;
+        public InterpolationMode InterpolationMode { get; set; } = InterpolationMode.Raw;
+
 
         public void Play(string filename)
         {
@@ -40,7 +43,7 @@ namespace NeoPaula
             var info = GetTrackInfo(_streamCopy);
             _streamCopy.Position = 0;
 
-            Module? module = null;
+            Module? module;
 
             if (info.Format == "Protracker MOD")
             {
@@ -57,7 +60,7 @@ namespace NeoPaula
 
             SamplePreprocessor.Preprocess(module, InterpolationMode);
 
-            _trackerProvider = new TrackerSampleProvider(module, 44100);
+            _trackerProvider = new TrackerSampleProvider(module, 44100, EnableOversampling);
 
             _wavePlayer.Init(_trackerProvider);
             _wavePlayer.Play();
@@ -180,7 +183,7 @@ namespace NeoPaula
         public void Dispose()
         {
             Stop();
-            _wavePlayer?.Dispose();
+            _wavePlayer.Dispose();
         }
     }
 }

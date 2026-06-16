@@ -24,6 +24,7 @@ namespace NeoPaula.Console
             {
                 using var player = new NeoPaulaPlayer();
                 player.InterpolationMode = InterpolationMode.Linear;
+                player.EnableOversampling = true;
                 System.Console.WriteLine($"Playing: {filename} ...");
                 player.PlayToEnd(filename);
             }

@@ -12,11 +12,11 @@ namespace NeoPaula.Tests
             var modData = new byte[2000];
 
             // Set title at offset 0
-            var title = Encoding.ASCII.GetBytes("Test MOD");
+            var title = "Test MOD"u8.ToArray();
             for(int i=0; i<title.Length; i++) modData[i] = title[i];
 
             // Set magic at 1080
-            var magic = Encoding.ASCII.GetBytes("M.K.");
+            var magic = "M.K."u8.ToArray();
             for(int i=0; i<magic.Length; i++) modData[1080 + i] = magic[i];
 
             using var stream = new MemoryStream(modData);
@@ -38,7 +38,7 @@ namespace NeoPaula.Tests
             var mmdData = new byte[2000];
 
             // Set magic at 0
-            var magic = Encoding.ASCII.GetBytes("MMD1");
+            var magic = "MMD1"u8.ToArray();
             for(int i=0; i<magic.Length; i++) mmdData[i] = magic[i];
 
             using var stream = new MemoryStream(mmdData);
