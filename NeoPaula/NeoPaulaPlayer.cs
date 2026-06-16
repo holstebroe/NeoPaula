@@ -14,6 +14,7 @@ namespace NeoPaula
 
         public bool EnableOversampling { get; set; } = false;
         public InterpolationMode InterpolationMode { get; set; } = InterpolationMode.Raw;
+        public ChannelStereoMode StereoMode { get; set; } = ChannelStereoMode.MidSpread;
 
 
         public void Play(string filename)
@@ -61,6 +62,7 @@ namespace NeoPaula
             SamplePreprocessor.Preprocess(module, InterpolationMode);
 
             _trackerProvider = new TrackerSampleProvider(module, 44100, EnableOversampling);
+            _trackerProvider.StereoMode = StereoMode;
 
             _wavePlayer.Init(_trackerProvider);
             _wavePlayer.Play();

@@ -56,6 +56,37 @@ namespace NeoPaula.Engine
 
         private int _nextRow = -1;
 
+        public ChannelStereoMode StereoMode
+        {
+            get => field;
+            set
+            {
+                field = value;
+                switch (value)
+                {
+                    case ChannelStereoMode.Mono:
+                        foreach (var t in _channels) t.Panning = 0;
+                        break;
+                    case ChannelStereoMode.HardPanning:
+                        for (int i = 0; i < _channels.Length/2; i++) _channels[i].Panning = -1;
+                        for (int i = _channels.Length / 2; i < _channels.Length; i++) _channels[i].Panning = 1;
+                        break;
+                    case ChannelStereoMode.MidPanning:
+                        for (int i = 0; i < _channels.Length / 2; i++) _channels[i].Panning = -0.5f;
+                        for (int i = _channels.Length / 2; i < _channels.Length; i++) _channels[i].Panning = 0.5f;
+                        break;
+                    case ChannelStereoMode.HardSpread:
+                        for (int i = 0; i < _channels.Length; i++) _channels[i].Panning = -1 + (float)i / (_channels.Length - 1) * 2;
+                        break;
+                    case ChannelStereoMode.MidSpread:
+                        for (int i = 0; i < _channels.Length; i++) _channels[i].Panning = -0.5f + (float)i / (_channels.Length - 1) * 1;
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(value), value, null);
+                }
+            }
+        } = ChannelStereoMode.HardPanning;
+
         public TrackerSampleProvider(Module module, int sampleRate = 44100, bool enableOversampling = false)
         {
             _module = module;
@@ -134,7 +165,7 @@ namespace NeoPaula.Engine
                     var state = _channels[ch];
                     float[] chBuffer = _channelBuffers[ch];
 
-                    if (state.IsPlaying && state.Sample != null && state.Sample.FloatData != null && state.Sample.FloatData.Length > 0)
+                    if (state is { IsPlaying: true, Sample.FloatData.Length: > 0 })
                     {
                         for (int i = 0; i < internalFramesToRender; i++)
                         {
@@ -226,11 +257,8 @@ namespace NeoPaula.Engine
 
                 for (int ch = 0; ch < _channels.Length; ch++)
                 {
-                    if (_channelBuffers[ch] != null)
-                    {
-                        ArrayPool<float>.Shared.Return(_channelBuffers[ch]);
-                        _channelBuffers[ch] = null!;
-                    }
+                    ArrayPool<float>.Shared.Return(_channelBuffers[ch]);
+                    _channelBuffers[ch] = null!;
                 }
             }
 
@@ -607,5 +635,14 @@ namespace NeoPaula.Engine
         public int SampleOffsetParam;
 
         public float Panning { get; set; }
+    }
+
+    public enum ChannelStereoMode
+    {
+        Mono,
+        HardPanning,
+        MidPanning,
+        HardSpread,
+        MidSpread
     }
 }
