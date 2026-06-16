@@ -25,6 +25,7 @@ namespace NeoPaula.Formats
         public int RepeatOffset { get; set; }
         public int RepeatLength { get; set; }
         public byte[] Data { get; set; } = [];
+        public float[] FloatData { get; set; } = [];
 
         // Some MMD specific
         public bool Is16Bit { get; set; }

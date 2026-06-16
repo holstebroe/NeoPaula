@@ -102,14 +102,14 @@ namespace NeoPaula.Engine
                     var state = _channels[ch];
                     float[] chBuffer = _channelBuffers[ch];
 
-                    if (state.IsPlaying && state.Sample != null && state.Sample.Data != null && state.Sample.Data.Length > 0)
+                    if (state.IsPlaying && state.Sample != null && state.Sample.FloatData != null && state.Sample.FloatData.Length > 0)
                     {
                         for (int i = 0; i < framesToRender; i++)
                         {
                             int sIndex = (int)state.SamplePosition;
                             if (sIndex < state.Sample.Length)
                             {
-                                float sVal = (sbyte)state.Sample.Data[sIndex] / 128f;
+                                float sVal = state.Sample.FloatData[sIndex];
 
                                 float currentVolume = state.Volume;
 
@@ -160,6 +160,9 @@ namespace NeoPaula.Engine
 
                                 float frequency = AmigaClock / (currentPeriod * 2.0f);
                                 float advance = frequency / _waveFormat.SampleRate;
+
+                                // Adjust advance since the sample table is upsampled from 8KHz to 44.1KHz
+                                advance *= (float)SamplePreprocessor.L / SamplePreprocessor.M;
 
                                 state.SamplePosition += advance;
 
@@ -319,7 +322,7 @@ namespace NeoPaula.Engine
                         if (cmd == 0x09) // Sample Offset
                         {
                             if (param > 0) state.SampleOffsetParam = param;
-                            state.SamplePosition = state.SampleOffsetParam * 256;
+                            state.SamplePosition = state.SampleOffsetParam * 256 * ((float)SamplePreprocessor.L / SamplePreprocessor.M);
                         }
                     }
 
