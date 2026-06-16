@@ -11,6 +11,8 @@ namespace NeoPaula
         private TrackerSampleProvider? _trackerProvider;
         private MemoryStream? _streamCopy;
 
+        public InterpolationMode InterpolationMode { get; set; } = InterpolationMode.Sinc;
+
         public void Play(string filename)
         {
             Stop();
@@ -52,6 +54,8 @@ namespace NeoPaula
             {
                 throw new NotSupportedException($"Unsupported format: {info.Format}");
             }
+
+            SamplePreprocessor.Preprocess(module, InterpolationMode);
 
             _trackerProvider = new TrackerSampleProvider(module, 44100);
 
