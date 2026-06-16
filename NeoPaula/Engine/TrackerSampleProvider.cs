@@ -1,5 +1,6 @@
 using System.Buffers;
 using NAudio.Wave;
+using NAudio.Dsp;
 using NeoPaula.Formats;
 
 namespace NeoPaula.Engine
@@ -44,13 +45,36 @@ namespace NeoPaula.Engine
             180, 161, 141, 120,  97,  74,  49,  24
         ];
 
+
+        // Oversampling state
+        private readonly bool _oversamplingEnabled;
+        private readonly int _oversamplingFactor;
+        private readonly BiQuadFilter[] _leftFilters = Array.Empty<BiQuadFilter>();
+        private readonly BiQuadFilter[] _rightFilters = Array.Empty<BiQuadFilter>();
+
         private int _nextOrder = -1;
+
         private int _nextRow = -1;
 
-        public TrackerSampleProvider(Module module, int sampleRate = 44100)
+        public TrackerSampleProvider(Module module, int sampleRate = 44100, bool enableOversampling = false)
         {
             _module = module;
             _waveFormat = WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, 2);
+
+            _oversamplingEnabled = enableOversampling;
+            _oversamplingFactor = enableOversampling ? 4 : 1;
+
+            if (enableOversampling)
+            {
+                int internalSampleRate = sampleRate * _oversamplingFactor;
+                _leftFilters = new BiQuadFilter[2];
+                _rightFilters = new BiQuadFilter[2];
+                for (int i = 0; i < 2; i++)
+                {
+                    _leftFilters[i] = BiQuadFilter.LowPassFilter(internalSampleRate, 20000, 0.707f);
+                    _rightFilters[i] = BiQuadFilter.LowPassFilter(internalSampleRate, 20000, 0.707f);
+                }
+            }
 
             _speed = module.DefaultSpeed;
             _tempo = module.DefaultTempo;
@@ -88,13 +112,21 @@ namespace NeoPaula.Engine
                     _tickSamplePosition = 0;
                 }
 
-                int samplesToRender = Math.Min(count - samplesWritten, _samplesPerTick - _tickSamplePosition);
-                int framesToRender = samplesToRender / 2;
+                int outputSamplesNeeded = count - samplesWritten;
+                int outputFramesNeeded = outputSamplesNeeded / 2;
+
+                int internalSamplesAvailable = _samplesPerTick - _tickSamplePosition;
+                int outputFramesAvailableInTick = (int)Math.Ceiling((double)internalSamplesAvailable / (2 * _oversamplingFactor));
+
+                int outputFramesToRender = Math.Min(outputFramesNeeded, outputFramesAvailableInTick);
+                int internalFramesToRender = outputFramesToRender * _oversamplingFactor;
+
+                if (internalFramesToRender <= 0) break;
 
                 for (int ch = 0; ch < _channels.Length; ch++)
                 {
-                    _channelBuffers[ch] = ArrayPool<float>.Shared.Rent(framesToRender);
-                    Array.Clear(_channelBuffers[ch], 0, framesToRender);
+                    _channelBuffers[ch] = ArrayPool<float>.Shared.Rent(internalFramesToRender);
+                    Array.Clear(_channelBuffers[ch], 0, internalFramesToRender);
                 }
 
                 for (int ch = 0; ch < _channels.Length; ch++)
@@ -104,7 +136,7 @@ namespace NeoPaula.Engine
 
                     if (state.IsPlaying && state.Sample != null && state.Sample.Data != null && state.Sample.Data.Length > 0)
                     {
-                        for (int i = 0; i < framesToRender; i++)
+                        for (int i = 0; i < internalFramesToRender; i++)
                         {
                             int sIndex = (int)state.SamplePosition;
                             if (sIndex < state.Sample.Length)
@@ -159,7 +191,7 @@ namespace NeoPaula.Engine
                                 if (currentPeriod < 1) currentPeriod = 1; // Prevent div by zero
 
                                 float frequency = AmigaClock / (currentPeriod * 2.0f);
-                                float advance = frequency / _waveFormat.SampleRate;
+                                float advance = frequency / (_waveFormat.SampleRate * _oversamplingFactor);
 
                                 state.SamplePosition += advance;
 
@@ -187,7 +219,7 @@ namespace NeoPaula.Engine
                     }
                 }
 
-                MixChannels(outBuffer, offset, framesToRender, ref samplesWritten);
+                MixChannels(outBuffer, offset, internalFramesToRender, ref samplesWritten);
 
                 for (int ch = 0; ch < _channels.Length; ch++)
                 {
@@ -202,9 +234,9 @@ namespace NeoPaula.Engine
             return samplesWritten;
         }
 
-        private void MixChannels(float[] outBuffer, int offset, int framesToRender, ref int samplesWritten)
+        private void MixChannels(float[] outBuffer, int offset, int internalFramesToRender, ref int samplesWritten)
         {
-            for (int i = 0; i < framesToRender; i++)
+            for (int i = 0; i < internalFramesToRender; i++)
             {
                 float leftMixed = 0;
                 float rightMixed = 0;
@@ -226,8 +258,18 @@ namespace NeoPaula.Engine
                 if (rightMixed > 1f) rightMixed = 1f;
                 if (rightMixed < -1f) rightMixed = -1f;
 
-                outBuffer[offset + samplesWritten++] = leftMixed;
-                outBuffer[offset + samplesWritten++] = rightMixed;
+                if (_oversamplingEnabled)
+                {
+                    for (int f = 0; f < _leftFilters.Length; f++) leftMixed = _leftFilters[f].Transform(leftMixed);
+                    for (int f = 0; f < _rightFilters.Length; f++) rightMixed = _rightFilters[f].Transform(rightMixed);
+                }
+
+                if (!_oversamplingEnabled || (i % _oversamplingFactor) == 0)
+                {
+                    outBuffer[offset + samplesWritten++] = leftMixed;
+                    outBuffer[offset + samplesWritten++] = rightMixed;
+                }
+
                 _tickSamplePosition += 2;
             }
         }
@@ -506,7 +548,7 @@ namespace NeoPaula.Engine
         private void UpdateSamplesPerTick()
         {
             double secondsPerTick = 2.5 / _tempo;
-            _samplesPerTick = (int)(WaveFormat.SampleRate * secondsPerTick) * 2;
+            _samplesPerTick = (int)(WaveFormat.SampleRate * secondsPerTick * _oversamplingFactor) * 2;
         }
 
         public void Seek(int order, int row)

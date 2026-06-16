@@ -7,9 +7,13 @@ namespace NeoPaula
 {
     public class NeoPaulaPlayer : IDisposable
     {
+
         private IWavePlayer _wavePlayer = new WaveOutEvent();
         private TrackerSampleProvider? _trackerProvider;
         private MemoryStream? _streamCopy;
+
+        public bool EnableOversampling { get; set; } = false;
+
 
         public void Play(string filename)
         {
@@ -53,7 +57,7 @@ namespace NeoPaula
                 throw new NotSupportedException($"Unsupported format: {info.Format}");
             }
 
-            _trackerProvider = new TrackerSampleProvider(module, 44100);
+            _trackerProvider = new TrackerSampleProvider(module, 44100, EnableOversampling);
 
             _wavePlayer.Init(_trackerProvider);
             _wavePlayer.Play();
