@@ -60,7 +60,10 @@ namespace NeoPaula.Engine
             _channels = new ChannelState[module.NumberOfChannels];
             for (int i = 0; i < _channels.Length; i++)
             {
-                _channels[i] = new ChannelState();
+                _channels[i] = new ChannelState
+                {
+                    Panning = (i % 4 == 0) || (i % 4 == 3) ? -1f : 1f
+                };
             }
             _channelBuffers = new float[_channels.Length][];
 
@@ -69,7 +72,11 @@ namespace NeoPaula.Engine
 
         public WaveFormat WaveFormat => _waveFormat;
 
-        public int Read(float[] buffer, int offset, int count)
+        /// <summary>
+        /// Reads audio data into the provided output buffer.
+        /// The output buffer data format is 0..1f stereo interleaved.
+        /// </summary>
+        public int Read(float[] outBuffer, int offset, int count)
         {
             int samplesWritten = 0;
 
@@ -180,30 +187,7 @@ namespace NeoPaula.Engine
                     }
                 }
 
-                for (int i = 0; i < framesToRender; i++)
-                {
-                    float leftMixed = 0;
-                    float rightMixed = 0;
-
-                    for (int ch = 0; ch < _channels.Length; ch++)
-                    {
-                        float sVal = _channelBuffers[ch][i];
-
-                        bool isLeft = (ch % 4 == 0) || (ch % 4 == 3);
-
-                        if (isLeft) leftMixed += sVal;
-                        else rightMixed += sVal;
-                    }
-
-                    if (leftMixed > 1f) leftMixed = 1f;
-                    if (leftMixed < -1f) leftMixed = -1f;
-                    if (rightMixed > 1f) rightMixed = 1f;
-                    if (rightMixed < -1f) rightMixed = -1f;
-
-                    buffer[offset + samplesWritten++] = leftMixed;
-                    buffer[offset + samplesWritten++] = rightMixed;
-                    _tickSamplePosition += 2;
-                }
+                MixChannels(outBuffer, offset, framesToRender, ref samplesWritten);
 
                 for (int ch = 0; ch < _channels.Length; ch++)
                 {
@@ -216,6 +200,36 @@ namespace NeoPaula.Engine
             }
 
             return samplesWritten;
+        }
+
+        private void MixChannels(float[] outBuffer, int offset, int framesToRender, ref int samplesWritten)
+        {
+            for (int i = 0; i < framesToRender; i++)
+            {
+                float leftMixed = 0;
+                float rightMixed = 0;
+
+                for (int ch = 0; ch < _channels.Length; ch++)
+                {
+                    float sVal = _channelBuffers[ch][i];
+                    var state = _channels[ch];
+
+                    float leftMix = sVal * (1 - state.Panning) * 0.5f;
+                    float rightMix = sVal * (1 + state.Panning) * 0.5f;
+
+                    leftMixed += leftMix;
+                    rightMixed += rightMix;
+                }
+
+                if (leftMixed > 1f) leftMixed = 1f;
+                if (leftMixed < -1f) leftMixed = -1f;
+                if (rightMixed > 1f) rightMixed = 1f;
+                if (rightMixed < -1f) rightMixed = -1f;
+
+                outBuffer[offset + samplesWritten++] = leftMixed;
+                outBuffer[offset + samplesWritten++] = rightMixed;
+                _tickSamplePosition += 2;
+            }
         }
 
         private void ProcessTick()
@@ -546,5 +560,7 @@ namespace NeoPaula.Engine
         public int ArpeggioParam;
 
         public int SampleOffsetParam;
+
+        public float Panning { get; set; }
     }
 }
