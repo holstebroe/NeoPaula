@@ -1,5 +1,11 @@
+name: NuGet Publish
+
+on:
+  workflow_dispatch: # Allows manual trigger for testing
+
 jobs:
   build-and-publish:
+    runs-on: ubuntu-latest
     permissions:
       id-token: write  # enable GitHub OIDC token issuance for this job
     
