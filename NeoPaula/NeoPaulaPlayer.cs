@@ -13,7 +13,7 @@ namespace NeoPaula
         private MemoryStream? _streamCopy;
 
         public bool EnableOversampling { get; set; } = false;
-        public InterpolationMode InterpolationMode { get; set; } = InterpolationMode.Sinc;
+        public InterpolationMode InterpolationMode { get; set; } = InterpolationMode.Linear;
 
 
         public void Play(string filename)
