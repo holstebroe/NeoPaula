@@ -1,5 +1,4 @@
-using System;
-using NeoPaula;
+using NeoPaula.Engine;
 
 namespace NeoPaula.Console
 {
@@ -15,7 +14,7 @@ namespace NeoPaula.Console
 
             string filename = args[0];
 
-            if (!System.IO.File.Exists(filename))
+            if (!File.Exists(filename))
             {
                 System.Console.WriteLine($"File not found: {filename}");
                 return;
@@ -24,6 +23,7 @@ namespace NeoPaula.Console
             try
             {
                 using var player = new NeoPaulaPlayer();
+                player.InterpolationMode = InterpolationMode.Linear;
                 System.Console.WriteLine($"Playing: {filename} ...");
                 player.PlayToEnd(filename);
             }

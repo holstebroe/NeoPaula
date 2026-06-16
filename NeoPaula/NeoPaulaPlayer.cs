@@ -11,7 +11,7 @@ namespace NeoPaula
         private TrackerSampleProvider? _trackerProvider;
         private MemoryStream? _streamCopy;
 
-        public InterpolationMode InterpolationMode { get; set; } = InterpolationMode.Sinc;
+        public InterpolationMode InterpolationMode { get; set; } = InterpolationMode.Linear;
 
         public void Play(string filename)
         {
