@@ -86,6 +86,26 @@ namespace NeoPaula
             _trackerProvider = null;
         }
 
+        public void PlayToEnd()
+        {
+            while (_wavePlayer.PlaybackState == PlaybackState.Playing)
+            {
+                Thread.Sleep(100);
+            }
+        }
+
+        public void PlayToEnd(string filename)
+        {
+            Play(filename);
+            PlayToEnd();
+        }
+
+        public void PlayToEnd(Stream stream)
+        {
+            Play(stream);
+            PlayToEnd();
+        }
+
         public void SeekOrder(int order)
         {
             if (_trackerProvider != null)
